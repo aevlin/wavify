@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wavify - YouTube to MP3 Downloader</title>
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --dark: #2d3436;
+            --light: #f5f6fa;
+            --success: #00b894;
+            --danger: #d63031;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--dark);
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo-icon {
+            font-size: 2.5rem;
+            margin-right: 15px;
+            color: var(--primary);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--primary);
+            font-weight: 700;
+        }
+        
+        p.subtitle {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--dark);
+            opacity: 0.7;
+        }
+        
+        .input-group {
+            display: flex;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .input-group input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #dfe6e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            padding-left: 45px;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #b2bec3;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn:hover {
+            background-color: #5549d9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-container {
+            text-align: center;
+        }
+        
+        .download-section {
+            margin-top: 40px;
+            display: none;
+        }
+        
+        .preview {
+            display: flex;
+            align-items: center;
+            background-color: #f1f2f6;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .thumbnail {
+            width: 120px;
+            height: 90px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-right: 20px;
+            background-color: #dfe6e9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .video-details h3 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+        
+        .video-details p {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        
+        .quality-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .quality-option {
+            flex: 1;
+            min-width: 120px;
+            background-color: white;
+            border: 2px solid #dfe6e9;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .quality-option:hover {
+            border-color: var(--primary);
+        }
+        
+        .quality-option.active {
+            border-color: var(--primary);
+            background-color: rgba(108, 92, 231, 0.1);
+        }
+        
+        .quality-option h4 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+        
+        .quality-option p {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+        
+        .progress-container {
+            display: none;
+            margin-top: 40px;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #dfe6e9;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            width: 0%;
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #7f8c8d;
+            font-size: 0.8rem;
+        }
+        
+        .waves {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            z-index: -1;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .quality-options {
+                flex-direction: column;
+            }
+            
+            .thumbnail {
+                width: 80px;
+                height: 60px;
+            }
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .animated-pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Wave animation background -->
+    <svg class="waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none">
+        <defs>
+            <linearGradient id="wave-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:rgba(108, 92, 231, 0.5)" />
+                <stop offset="100%" style="stop-color:rgba(162, 155, 254, 0.5)" />
+            </linearGradient>
+        </defs>
+        <path fill="url(#wave-gradient)" d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18v44h-352z" />
+    </svg>
+
+    <div class="container">
+        <div class="logo">
+            <div class="logo-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18V5l12-2v13"></path>
+                    <circle cx="6" cy="18" r="3"></circle>
+                    <circle cx="18" cy="16" r="3"></circle>
+                </svg>
+            </div>
+            <h1>Wavify</h1>
+        </div>
+        
+        <p class="subtitle">Convert YouTube videos to high-quality MP3 files with just one click</p>
+        
+        <div class="input-group">
+            <div class="input-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 2H3v16h5v4l4-4h5l4-4V2zM11 11V7M16 11V7"></path>
+                </svg>
+            </div>
+            <input type="text" id="youtube-url" placeholder="Paste YouTube URL here..." />
+        </div>
+        
+        <div class="btn-container">
+            <button class="btn" id="convert-btn">Convert to MP3</button>
+        </div>
+        
+        <div class="download-section" id="download-section">
+            <div class="preview">
+                <div class="thumbnail">
+                    <img id="video-thumbnail" src="/api/placeholder/120/90" alt="Video thumbnail" />
+                </div>
+                <div class="video-details">
+                    <h3 id="video-title">Video Title</h3>
+                    <p id="video-duration">Duration: 3:45</p>
+                </div>
+            </div>
+            
+            <h3>Select Quality</h3>
+            <div class="quality-options">
+                <div class="quality-option active">
+                    <h4>High Quality</h4>
+                    <p>320 kbps</p>
+                </div>
+                <div class="quality-option">
+                    <h4>Medium Quality</h4>
+                    <p>192 kbps</p>
+                </div>
+                <div class="quality-option">
+                    <h4>Standard Quality</h4>
+                    <p>128 kbps</p>
+                </div>
+            </div>
+            
+            <div class="btn-container">
+                <button class="btn" id="download-btn">Download MP3</button>
+            </div>
+            
+            <div class="progress-container" id="progress-container">
+                <div class="progress-bar">
+                    <div class="progress" id="progress"></div>
+                </div>
+                <div class="progress-text">
+                    <span>Downloading...</span>
+                    <span id="progress-percentage">0%</span>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>For personal use only. Please respect copyright laws and YouTube's Terms of Service.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const convertBtn = document.getElementById('convert-btn');
+            const downloadBtn = document.getElementById('download-btn');
+            const youtubeUrl = document.getElementById('youtube-url');
+            const downloadSection = document.getElementById('download-section');
+            const progressContainer = document.getElementById('progress-container');
+            const progress = document.getElementById('progress');
+            const progressPercentage = document.getElementById('progress-percentage');
+            const videoTitle = document.getElementById('video-title');
+            const videoDuration = document.getElementById('video-duration');
+            const videoThumbnail = document.getElementById('video-thumbnail');
+            const qualityOptions = document.querySelectorAll('.quality-option');
+            
+            // Demo functionality (since actual conversion requires server-side code)
+            convertBtn.addEventListener('click', function() {
+                const url = youtubeUrl.value.trim();
+                
+                if (!url) {
+                    alert('Please enter a valid YouTube URL');
+                    return;
+                }
+                
+                // Extract video ID from URL (simple demo version)
+                let videoId = '';
+                if (url.includes('youtube.com/watch?v=')) {
+                    videoId = url.split('v=')[1].split('&')[0];
+                } else if (url.includes('youtu.be/')) {
+                    videoId = url.split('youtu.be/')[1].split('?')[0];
+                } else {
+                    alert('Please enter a valid YouTube URL');
+                    return;
+                }
+                
+                // In a real app, you'd fetch video details from an API
+                // For demo purposes, we'll simulate this
+                
+                // Simulate loading
+                convertBtn.textContent = 'Processing...';
+                convertBtn.disabled = true;
+                
+                setTimeout(() => {
+                    // Demo data
+                    videoTitle.textContent = 'Demo Video Title';
+                    videoDuration.textContent = 'Duration: 4:32';
+                    
+                    // Show download section
+                    downloadSection.style.display = 'block';
+                    
+                    // Reset button
+                    convertBtn.textContent = 'Convert to MP3';
+                    convertBtn.disabled = false;
+                    
+                    // Scroll to download section
+                    downloadSection.scrollIntoView({ behavior: 'smooth' });
+                }, 1500);
+            });
+            
+            // Quality selection
+            qualityOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    qualityOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Download button (demo functionality)
+            downloadBtn.addEventListener('click', function() {
+                progressContainer.style.display = 'block';
+                downloadBtn.disabled = true;
+                downloadBtn.textContent = 'Downloading...';
+                
+                // Simulate progress
+                let percent = 0;
+                const interval = setInterval(() => {
+                    percent += 5;
+                    progress.style.width = percent + '%';
+                    progressPercentage.textContent = percent + '%';
+                    
+                    if (percent >= 100) {
+                        clearInterval(interval);
+                        setTimeout(() => {
+                            alert('In a real application, the MP3 file would start downloading now. This is just a demo interface.');
+                            
+                            // Reset UI
+                            progressContainer.style.display = 'none';
+                            downloadBtn.disabled = false;
+                            downloadBtn.textContent = 'Download MP3';
+                            progress.style.width = '0%';
+                            progressPercentage.textContent = '0%';
+                        }, 500);
+                    }
+                }, 200);
+            });
+        });
+    </script>
+    <script src="script.js" defer></script>
+</body>
+</html>
